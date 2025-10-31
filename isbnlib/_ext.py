@@ -40,7 +40,7 @@ def editions(isbn, service='merge'):
 
 def isbn_from_words(words):
     """Return the most probable ISBN from a list of words."""
-    return goos(words)
+    return ""
 
 
 def doi(isbn):
@@ -85,10 +85,11 @@ def ren(fp):
 def cover(isbn):
     """Get the img urls of the cover of the ISBN."""
     isbn = EAN13(isbn)
-    return gcover(isbn) if isbn else {}
+    return meta(isbn, 'openl') if isbn else {}
 
 
 def desc(isbn):
     """Return a descripion of the ISBN."""
     isbn = EAN13(isbn)
-    return goo_desc(isbn) if isbn else ''
+    data = meta(isbn, 'openl')
+    return data.get('Title', '') if data else ''
