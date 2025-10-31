@@ -3,8 +3,12 @@
 
 import logging
 
-# 'pkg_resources' is deprecated! SEE https://setuptools.pypa.io/en/latest/pkg_resources.html
-from pkg_resources import iter_entry_points
+# Use importlib.metadata (available in Python 3.8+, modern replacement for pkg_resources)
+try:
+    from importlib.metadata import entry_points
+except ImportError:
+    # Fallback for Python < 3.8
+    from importlib_metadata import entry_points
 
 from . import NotValidDefaultFormatterError, NotValidDefaultServiceError
 from . import _goob as goob
@@ -86,7 +90,13 @@ def load_plugins():  # pragma: no cover
     # get metadata plugins from entry_points
     if options.get('LOAD_METADATA_PLUGINS', True):
         try:
-            for entry in iter_entry_points(group='isbnlib.metadata'):
+            eps = entry_points()
+            # Handle both old (dict) and new (SelectableGroups) API
+            if hasattr(eps, 'select'):
+                metadata_entries = eps.select(group='isbnlib.metadata')
+            else:
+                metadata_entries = eps.get('isbnlib.metadata', [])
+            for entry in metadata_entries:
                 add_service(entry.name, entry.load())
         except Exception:
             LOGGER.critical('Some metadata plugins were not loaded!')
@@ -97,7 +107,13 @@ def load_plugins():  # pragma: no cover
     # get formatters from entry_points
     if options.get('LOAD_FORMATTER_PLUGINS', True):
         try:
-            for entry in iter_entry_points(group='isbnlib.formatters'):
+            eps = entry_points()
+            # Handle both old (dict) and new (SelectableGroups) API
+            if hasattr(eps, 'select'):
+                formatter_entries = eps.select(group='isbnlib.formatters')
+            else:
+                formatter_entries = eps.get('isbnlib.formatters', [])
+            for entry in formatter_entries:
                 add_bibformatter(entry.name, entry.load())
         except Exception:
             LOGGER.critical('Some formatters plugins were not loaded!')
