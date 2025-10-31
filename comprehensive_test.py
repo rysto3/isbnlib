@@ -84,15 +84,17 @@ def main():
     print("\n[6] Testing Metadata Retrieval...")
     for title, isbn13, isbn10 in test_books:
         try:
-            meta = isbnlib.meta(isbn13)
+            meta = isbnlib.meta(isbn13, service='openl')
             if meta:
                 meta_title = meta.get('Title', 'N/A')
                 authors = ', '.join(meta.get('Authors', []))
                 year = meta.get('Year', 'N/A')
+                subjects = meta.get('Subjects', 'N/A')
                 print(f"✓ {title}:")
                 print(f"    Title: {meta_title}")
                 print(f"    Authors: {authors}")
                 print(f"    Year: {year}")
+                print(f"    Subjects: {subjects}")
             else:
                 print(f"⚠ {title}: No metadata found")
         except Exception as e:

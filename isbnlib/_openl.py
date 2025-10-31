@@ -35,6 +35,20 @@ def _mapper(isbn, records):
                 }, ),
             )
         ]
+        # extract Subjects reported by OpenLibrary (handle 'subjects' or 'subject',
+        # and items that may be strings or dicts with 'name'/'subject')
+        _raw_subjects = records.get('subjects') or records.get('subject') or []
+        subjects = []
+        for s in _raw_subjects:
+            if isinstance(s, dict):
+                name = s.get('name') or s.get('subject') or ''
+            elif isinstance(s, str):
+                name = s
+            else:
+                name = ''
+            if name:
+                subjects.append(name)
+        canonical['Subjects'] = subjects
         canonical['Publisher'] = records.get(
             'publishers',
             [
@@ -53,7 +67,12 @@ def _mapper(isbn, records):
         LOGGER.debug('RecordMappingError for %s with data %s', isbn, records)
         raise RecordMappingError(isbn)
     # call stdmeta for extra cleaning and validation
-    return stdmeta(canonical)
+    subjects = canonical.pop('Subjects', [])
+    out = stdmeta(canonical)
+    # Ensure 'Subjects' from OpenLibrary are preserved (stdmeta may not include them)
+    if subjects:
+        out['Subjects'] = subjects
+    return out
 
 
 # pylint: disable=broad-except
