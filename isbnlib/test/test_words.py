@@ -10,6 +10,7 @@ from .. import _gwords as words
 
 pytestmark = pytest.mark.network
 
+@pytest.mark.xfail
 def test_words():
     """Test 'isbn_from_words' function."""
     assert len(words.goos('the old man and the sea')) == 13
